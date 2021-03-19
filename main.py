@@ -165,6 +165,11 @@ def train(model, criterion, optimizer, train_dataloader, val_dataloader, args):
 
 
 def val(model, best_iou, val_dataloaders):
+    f = open(r'/root/pycharm/saved_model/' + str(args.arch) + '_' + str(args.batch_size) + '_' + str(
+        args.dataset) + '_' + str(args.epoch) + '.pth', 'w')
+    f.close()
+    print("已创建" + r'/root/pycharm/saved_model/' + str(args.arch) + '_' + str(args.batch_size) + '_' + str(
+        args.dataset) + '_' + str(args.epoch) + '.pth')
     model = model.eval()
     with torch.no_grad():
         i = 0  # 验证集中第i张图
@@ -191,13 +196,18 @@ def val(model, best_iou, val_dataloaders):
         aver_dice = dice_total / num
         print('Miou=%f,aver_hd=%f,aver_dice=%f' % (aver_iou, aver_hd, aver_dice))
         logging.info('Miou=%f,aver_hd=%f,aver_dice=%f' % (aver_iou, aver_hd, aver_dice))
-        if aver_iou > best_iou:
+        # if aver_iou >= best_iou:  # 因为要测试能否正常保存所以改成无条件保存
+        if True:
             print('aver_iou:{} > best_iou:{}'.format(aver_iou, best_iou))
             logging.info('aver_iou:{} > best_iou:{}'.format(aver_iou, best_iou))
             logging.info('===========>save best model!')
             best_iou = aver_iou
             print('===========>save best model!')
-            torch.save(model.state_dict(), r'./saved_model/' + str(args.arch) + '_' + str(args.batch_size) + '_' + str(
+            # os.makedirs(saved_predict_path)
+            f = open(r'/root/pycharm/saved_model/' + str(args.arch) + '_' + str(args.batch_size) + '_' + str(
+                args.dataset) + '_' + str(args.epoch) + '.pth', 'w')
+            f.close()
+            torch.save(model.state_dict(), r'/root/pycharm/saved_model/' + str(args.arch) + '_' + str(args.batch_size) + '_' + str(
                 args.dataset) + '_' + str(args.epoch) + '.pth')
         return best_iou, aver_iou, aver_dice, aver_hd
 
@@ -210,6 +220,7 @@ def test(val_dataloaders, save_predict=False):
             os.makedirs(dir)
         else:
             print('dir already exist!')
+    # TODO: 找到哪个方法创建了这个文件
     model.load_state_dict(torch.load(
         r'./saved_model/' + str(args.arch) + '_' + str(args.batch_size) + '_' + str(args.dataset) + '_' + str(
             args.epoch) + '.pth', map_location='cpu'))  # 载入训练好的模型
